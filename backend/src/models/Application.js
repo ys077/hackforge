@@ -6,13 +6,11 @@ const applicationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Worker",
       required: true,
-      index: true,
     },
     jobId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Job",
       required: true,
-      index: true,
     },
     resumeId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,7 +28,6 @@ const applicationSchema = new mongoose.Schema(
         "withdrawn",
       ],
       default: "pending",
-      index: true,
     },
     coverNote: {
       type: String,
@@ -39,7 +36,6 @@ const applicationSchema = new mongoose.Schema(
       type: Number,
       min: 0,
       max: 100,
-      index: true,
     },
     skillsMatchScore: {
       type: Number,
@@ -87,6 +83,10 @@ const applicationSchema = new mongoose.Schema(
 
 // Compound unique index: one application per worker per job
 applicationSchema.index({ workerId: 1, jobId: 1 }, { unique: true });
+
+// Indexes
+applicationSchema.index({ status: 1 });
+applicationSchema.index({ matchScore: -1 });
 
 // Virtual for worker
 applicationSchema.virtual("worker", {

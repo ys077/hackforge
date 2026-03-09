@@ -1,34 +1,25 @@
 const mongoose = require("mongoose");
 const logger = require("../utils/logger");
 
-// MongoDB connection URI
+// MongoDB connection URI - MUST be set via MONGO_URL environment variable
 const getMongoUri = () => {
-  // Railway MongoDB URL (prioritize this)
-  if (process.env.MONGO_URL) {
-    return process.env.MONGO_URL;
+  if (!process.env.MONGO_URL) {
+    throw new Error(
+      "MONGO_URL environment variable is not set. " +
+        "Please set it to your MongoDB connection string.",
+    );
   }
-
-  // Fallback to individual components
-  const host = process.env.MONGO_HOST || "localhost";
-  const port = process.env.MONGO_PORT || "27017";
-  const database = process.env.MONGO_DB || "hackforge";
-  const user = process.env.MONGO_USER;
-  const password = process.env.MONGO_PASSWORD;
-
-  if (user && password) {
-    return `mongodb://${user}:${password}@${host}:${port}/${database}?authSource=admin`;
-  }
-
-  return `mongodb://${host}:${port}/${database}`;
+  return process.env.MONGO_URL;
 };
 
 // Mongoose connection options
 const mongooseOptions = {
   maxPoolSize: process.env.NODE_ENV === "production" ? 20 : 10,
   minPoolSize: process.env.NODE_ENV === "production" ? 5 : 1,
-  serverSelectionTimeoutMS: 5000,
+  serverSelectionTimeoutMS: 10000,
   socketTimeoutMS: 45000,
   family: 4, // Use IPv4
+  retryWrites: true,
 };
 
 // Connect to MongoDB
@@ -42,7 +33,7 @@ const connectDatabase = async () => {
     });
 
     mongoose.connection.on("error", (err) => {
-      logger.error("❌ MongoDB connection error:", err);
+      logger.error("❌ MongoDB connection error:", err.message);
     });
 
     mongoose.connection.on("disconnected", () => {
@@ -54,15 +45,13 @@ const connectDatabase = async () => {
       mongoose.set("debug", true);
     }
 
+    logger.info("Connecting to MongoDB...");
     await mongoose.connect(uri, mongooseOptions);
-
-    logger.info(
-      `✅ Connected to MongoDB (${process.env.NODE_ENV || "development"})`,
-    );
+    logger.info("MongoDB connected successfully");
 
     return mongoose.connection;
   } catch (error) {
-    logger.error("❌ Unable to connect to MongoDB:", error);
+    logger.error("❌ Unable to connect to MongoDB:", error.message);
     throw error;
   }
 };

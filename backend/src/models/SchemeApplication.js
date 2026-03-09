@@ -6,13 +6,11 @@ const schemeApplicationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Worker",
       required: true,
-      index: true,
     },
     schemeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "GovernmentScheme",
       required: true,
-      index: true,
     },
     status: {
       type: String,
@@ -25,13 +23,11 @@ const schemeApplicationSchema = new mongoose.Schema(
         "rejected",
       ],
       default: "draft",
-      index: true,
     },
     referenceNumber: {
       type: String,
       unique: true,
       sparse: true,
-      index: true,
     },
     eligibilityScore: {
       type: Number,
@@ -61,7 +57,6 @@ const schemeApplicationSchema = new mongoose.Schema(
     },
     submittedAt: {
       type: Date,
-      index: true,
     },
     reviewedAt: {
       type: Date,
@@ -88,6 +83,11 @@ schemeApplicationSchema.index(
     partialFilterExpression: { status: { $nin: ["rejected"] } },
   },
 );
+
+schemeApplicationSchema.index({ status: 1 });
+schemeApplicationSchema.index({ workerId: 1 });
+schemeApplicationSchema.index({ schemeId: 1 });
+schemeApplicationSchema.index({ submittedAt: -1 });
 
 // Virtual for worker
 schemeApplicationSchema.virtual("worker", {

@@ -7,14 +7,12 @@ const trustScoreSchema = new mongoose.Schema(
       ref: "Worker",
       required: true,
       unique: true,
-      index: true,
     },
     overallScore: {
       type: Number,
       default: 0,
       min: 0,
       max: 100,
-      index: true,
     },
     // Component scores (0-100)
     profileCompletenessScore: {
@@ -83,13 +81,11 @@ const trustScoreSchema = new mongoose.Schema(
       type: String,
       enum: ["unverified", "basic", "verified", "trusted", "premium"],
       default: "unverified",
-      index: true,
     },
     // Last calculation timestamp
     calculatedAt: {
       type: Date,
       default: Date.now,
-      index: true,
     },
     // ML model version used
     mlModelVersion: {
@@ -103,6 +99,11 @@ const trustScoreSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   },
 );
+
+// Indexes
+trustScoreSchema.index({ overallScore: -1 });
+trustScoreSchema.index({ trustLevel: 1 });
+trustScoreSchema.index({ calculatedAt: -1 });
 
 // Virtual for worker
 trustScoreSchema.virtual("worker", {

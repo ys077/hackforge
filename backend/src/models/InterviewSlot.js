@@ -6,18 +6,15 @@ const interviewSlotSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Job",
       required: true,
-      index: true,
     },
     employerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employer",
       required: true,
-      index: true,
     },
     startTime: {
       type: Date,
       required: true,
-      index: true,
     },
     endTime: {
       type: Date,
@@ -64,7 +61,6 @@ const interviewSlotSchema = new mongoose.Schema(
       type: String,
       enum: ["available", "booked", "cancelled", "completed"],
       default: "available",
-      index: true,
     },
     notes: {
       type: String,
@@ -89,6 +85,7 @@ const interviewSlotSchema = new mongoose.Schema(
 // Compound indexes
 interviewSlotSchema.index({ jobId: 1, status: 1 });
 interviewSlotSchema.index({ startTime: 1, endTime: 1 });
+interviewSlotSchema.index({ employerId: 1 });
 
 // Virtual for job
 interviewSlotSchema.virtual("job", {

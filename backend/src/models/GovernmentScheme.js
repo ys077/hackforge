@@ -6,7 +6,6 @@ const governmentSchemeSchema = new mongoose.Schema(
       type: String,
       required: true,
       maxlength: 200,
-      index: true,
     },
     nameHindi: {
       type: String,
@@ -31,18 +30,15 @@ const governmentSchemeSchema = new mongoose.Schema(
       type: String,
       enum: ["central", "state", "local"],
       default: "central",
-      index: true,
     },
     state: {
       type: String,
       maxlength: 100,
-      index: true,
     },
     benefitType: {
       type: String,
       enum: ["financial", "training", "subsidy", "insurance", "loan", "other"],
       required: true,
-      index: true,
     },
     benefitAmountMin: {
       type: Number,
@@ -79,7 +75,6 @@ const governmentSchemeSchema = new mongoose.Schema(
     occupationCategories: {
       type: [String],
       default: [],
-      index: true,
     },
     requiredDocuments: {
       type: [String],
@@ -99,7 +94,6 @@ const governmentSchemeSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
-      index: true,
     },
     startDate: {
       type: Date,
@@ -118,7 +112,6 @@ const governmentSchemeSchema = new mongoose.Schema(
     tags: {
       type: [String],
       default: [],
-      index: true,
     },
   },
   {
@@ -127,6 +120,15 @@ const governmentSchemeSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   },
 );
+
+// Indexes
+governmentSchemeSchema.index({ name: 1 });
+governmentSchemeSchema.index({ schemeType: 1 });
+governmentSchemeSchema.index({ state: 1 });
+governmentSchemeSchema.index({ benefitType: 1 });
+governmentSchemeSchema.index({ occupationCategories: 1 });
+governmentSchemeSchema.index({ isActive: 1 });
+governmentSchemeSchema.index({ tags: 1 });
 
 // Check if scheme is currently active
 governmentSchemeSchema.methods.isCurrentlyActive = function () {

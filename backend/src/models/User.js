@@ -66,8 +66,6 @@ const userSchema = new mongoose.Schema(
 );
 
 // Indexes
-userSchema.index({ phone: 1 }, { unique: true });
-userSchema.index({ email: 1 }, { sparse: true });
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 

@@ -6,7 +6,6 @@ const documentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Worker",
       required: true,
-      index: true,
     },
     documentType: {
       type: String,
@@ -21,7 +20,6 @@ const documentSchema = new mongoose.Schema(
         "other",
       ],
       required: true,
-      index: true,
     },
     documentName: {
       type: String,
@@ -48,7 +46,6 @@ const documentSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "verified", "rejected", "expired"],
       default: "pending",
-      index: true,
     },
     verificationNotes: {
       type: String,
@@ -78,7 +75,6 @@ const documentSchema = new mongoose.Schema(
     documentNumber: {
       type: String,
       maxlength: 50,
-      index: true,
     },
     documentHolderName: {
       type: String,
@@ -120,6 +116,8 @@ const documentSchema = new mongoose.Schema(
 
 // Indexes
 documentSchema.index({ workerId: 1, documentType: 1, isPrimary: 1 });
+documentSchema.index({ verificationStatus: 1 });
+documentSchema.index({ documentNumber: 1 });
 
 // Virtual for worker
 documentSchema.virtual("worker", {

@@ -6,7 +6,6 @@ const resumeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Worker",
       required: true,
-      index: true,
     },
     title: {
       type: String,
@@ -90,7 +89,6 @@ const resumeSchema = new mongoose.Schema(
       type: Number,
       min: 0,
       max: 100,
-      index: true,
     },
     atsFeedback: {
       type: mongoose.Schema.Types.Mixed,
@@ -101,13 +99,11 @@ const resumeSchema = new mongoose.Schema(
       type: String,
       default: "en",
       maxlength: 5,
-      index: true,
     },
     // Primary resume flag
     isPrimary: {
       type: Boolean,
       default: false,
-      index: true,
     },
     // Downloads count
     downloadsCount: {
@@ -125,6 +121,12 @@ const resumeSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   },
 );
+
+// Indexes
+resumeSchema.index({ workerId: 1 });
+resumeSchema.index({ isPrimary: 1 });
+resumeSchema.index({ language: 1 });
+resumeSchema.index({ atsScore: -1 });
 
 // Virtual for worker
 resumeSchema.virtual("worker", {

@@ -6,7 +6,6 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     type: {
       type: String,
@@ -20,7 +19,6 @@ const notificationSchema = new mongoose.Schema(
         "system",
       ],
       required: true,
-      index: true,
     },
     title: {
       type: String,
@@ -47,7 +45,6 @@ const notificationSchema = new mongoose.Schema(
     isRead: {
       type: Boolean,
       default: false,
-      index: true,
     },
     readAt: {
       type: Date,
@@ -71,7 +68,6 @@ const notificationSchema = new mongoose.Schema(
     // Scheduled notification
     scheduledAt: {
       type: Date,
-      index: true,
     },
     sentAt: {
       type: Date,
@@ -95,6 +91,8 @@ const notificationSchema = new mongoose.Schema(
 
 // Compound index
 notificationSchema.index({ userId: 1, isRead: 1 });
+notificationSchema.index({ type: 1 });
+notificationSchema.index({ scheduledAt: 1 });
 
 // Virtual for user
 notificationSchema.virtual("user", {

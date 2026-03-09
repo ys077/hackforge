@@ -6,18 +6,15 @@ const interviewBookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Worker",
       required: true,
-      index: true,
     },
     slotId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "InterviewSlot",
       required: true,
-      index: true,
     },
     applicationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Application",
-      index: true,
     },
     status: {
       type: String,
@@ -30,13 +27,11 @@ const interviewBookingSchema = new mongoose.Schema(
         "rescheduled",
       ],
       default: "scheduled",
-      index: true,
     },
     confirmationCode: {
       type: String,
       unique: true,
       sparse: true,
-      index: true,
     },
     confirmedAt: {
       type: Date,
@@ -59,7 +54,6 @@ const interviewBookingSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "passed", "failed", "on_hold"],
       default: "pending",
-      index: true,
     },
     interviewerNotes: {
       type: String,
@@ -108,6 +102,10 @@ const interviewBookingSchema = new mongoose.Schema(
 
 // Compound unique index
 interviewBookingSchema.index({ workerId: 1, slotId: 1 }, { unique: true });
+
+interviewBookingSchema.index({ applicationId: 1 });
+interviewBookingSchema.index({ status: 1 });
+interviewBookingSchema.index({ outcome: 1 });
 
 // Virtual for worker
 interviewBookingSchema.virtual("worker", {

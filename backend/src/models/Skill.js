@@ -37,7 +37,6 @@ const skillSchema = new mongoose.Schema(
 );
 
 // Indexes
-skillSchema.index({ name: 1 }, { unique: true });
 skillSchema.index({ category: 1 });
 skillSchema.index({ usageCount: -1 });
 

@@ -119,7 +119,6 @@ const employerSchema = new mongoose.Schema(
 );
 
 // Indexes
-employerSchema.index({ userId: 1 }, { unique: true });
 employerSchema.index({ companyName: 1 });
 employerSchema.index({ companyType: 1 });
 employerSchema.index({ city: 1 });

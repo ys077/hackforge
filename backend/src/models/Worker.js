@@ -132,7 +132,6 @@ const workerSchema = new mongoose.Schema(
 );
 
 // Indexes
-workerSchema.index({ userId: 1 }, { unique: true });
 workerSchema.index({ location: "2dsphere" });
 workerSchema.index({ city: 1 });
 workerSchema.index({ state: 1 });
