@@ -125,7 +125,7 @@ exports.getDashboard = asyncHandler(async (req, res) => {
   }
 
   // Get job statistics
-  const { Op } = require("sequelize");
+  const { Op } = require("../utils/mongoOp");
 
   const [
     activeJobs,
@@ -187,7 +187,7 @@ exports.getDashboard = asyncHandler(async (req, res) => {
  */
 exports.getStatistics = asyncHandler(async (req, res) => {
   const employerId = req.employer.id;
-  const { Op } = require("sequelize");
+  const { Op } = require("../utils/mongoOp");
   const { startDate, endDate } = req.query;
 
   const dateFilter = {};
@@ -257,7 +257,7 @@ exports.getStatistics = asyncHandler(async (req, res) => {
  */
 exports.searchCandidates = asyncHandler(async (req, res) => {
   const { Worker, Skill } = require("../models");
-  const { Op } = require("sequelize");
+  const { Op } = require("../utils/mongoOp");
 
   const {
     skills,

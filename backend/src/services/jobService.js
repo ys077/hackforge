@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op } = require("../utils/mongoOp");
 const { Job, Employer, Application, Worker } = require("../models");
 const mlService = require("./mlService");
 const mapService = require("./mapService");

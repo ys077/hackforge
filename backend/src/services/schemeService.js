@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op } = require("../utils/mongoOp");
 const {
   GovernmentScheme,
   SchemeApplication,

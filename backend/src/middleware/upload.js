@@ -262,6 +262,13 @@ const validateDocumentUpload = (documentType) => {
   };
 };
 
+// Specific upload middlewares for common use cases
+const uploadDocument = uploadSingle("document");
+const uploadPhoto = uploadSingle("photo");
+const uploadProfilePhoto = uploadSingle("profile_photo");
+const uploadResume = uploadSingle("resume");
+const uploadLogo = uploadSingle("logo");
+
 module.exports = {
   upload,
   uploadSingle,
@@ -274,4 +281,9 @@ module.exports = {
   cleanupTempFiles,
   documentUploadConfig,
   validateDocumentUpload,
+  uploadDocument,
+  uploadPhoto,
+  uploadProfilePhoto,
+  uploadResume,
+  uploadLogo,
 };

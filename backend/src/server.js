@@ -4,8 +4,15 @@ const app = require("./app");
 const config = require("./config");
 const logger = require("./utils/logger");
 const { connectDatabase } = require("./config/database");
-const { getRedisClient } = require("./config/redis");
 const notificationService = require("./services/notificationService");
+
+// Optional Redis import - won't crash if Redis is unavailable
+let getRedisClient;
+try {
+  getRedisClient = require("./config/redis").getRedisClient;
+} catch (err) {
+  logger.warn("Redis module not available");
+}
 
 // Create HTTP server
 const server = http.createServer(app);
@@ -55,20 +62,32 @@ const startServer = async () => {
     await connectDatabase();
     logger.info("Database connected successfully");
 
-    // Connect to Redis
-    logger.info("Connecting to Redis...");
-    const redis = getRedisClient();
-    await redis.ping();
-    logger.info("Redis connected successfully");
+    // Connect to Redis (optional - server continues if Redis unavailable)
+    if (getRedisClient && process.env.REDIS_HOST) {
+      try {
+        logger.info("Connecting to Redis...");
+        const redis = getRedisClient();
+        await redis.ping();
+        logger.info("Redis connected successfully");
+      } catch (redisError) {
+        logger.warn(
+          "Redis connection failed - continuing without Redis:",
+          redisError.message,
+        );
+      }
+    } else {
+      logger.info("Redis not configured - skipping Redis connection");
+    }
 
-    // Start HTTP server
-    server.listen(config.port, () => {
-      logger.info(`Server running on port ${config.port}`);
+    // Start HTTP server - use PORT from environment (Railway assigns this)
+    const port = process.env.PORT || config.port;
+    server.listen(port, "0.0.0.0", () => {
+      logger.info(`🚀 Server running on port ${port}`);
       logger.info(`Environment: ${config.env}`);
-      logger.info(`API URL: http://localhost:${config.port}/api`);
-      logger.info(`Health check: http://localhost:${config.port}/api/health`);
+      logger.info(`Health check: /health or /api/health`);
 
       if (config.env === "development") {
+        logger.info(`API URL: http://localhost:${port}/api`);
         logger.info("Development mode - detailed logging enabled");
       }
     });

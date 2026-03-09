@@ -106,18 +106,34 @@ const config = {
     aadhaarVerificationUrl: process.env.AADHAAR_VERIFICATION_URL || "",
     panVerificationUrl: process.env.PAN_VERIFICATION_URL || "",
   },
+
+  // CORS
+  cors: {
+    origins: (process.env.CORS_ORIGINS || "*").split(","),
+  },
 };
 
 // Validate required configurations in production
 const validateConfig = () => {
   if (config.env === "production") {
-    const required = ["JWT_SECRET", "DB_PASSWORD", "MAPTILER_API_KEY"];
+    const required = ["JWT_SECRET", "MONGO_URL"];
+    const recommended = ["MAPTILER_API_KEY"];
 
     const missing = required.filter((key) => !process.env[key]);
+    const missingRecommended = recommended.filter((key) => !process.env[key]);
 
     if (missing.length > 0) {
-      throw new Error(
-        `Missing required environment variables: ${missing.join(", ")}`,
+      console.warn(
+        `⚠️ Warning: Missing required environment variables: ${missing.join(", ")}`,
+      );
+      console.warn(
+        "Server may not function correctly without these variables.",
+      );
+    }
+
+    if (missingRecommended.length > 0) {
+      console.warn(
+        `ℹ️ Info: Missing recommended environment variables: ${missingRecommended.join(", ")}`,
       );
     }
   }

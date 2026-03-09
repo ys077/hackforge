@@ -10,7 +10,7 @@ const {
 } = require("../models");
 const { success } = require("../utils/responses");
 const { asyncHandler } = require("../middleware/errorHandler");
-const { Op } = require("sequelize");
+const { Op } = require("../utils/mongoOp");
 
 /**
  * @route GET /api/admin/dashboard

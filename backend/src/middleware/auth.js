@@ -260,6 +260,82 @@ const generateTokens = (user) => {
   return { accessToken, refreshToken };
 };
 
+/**
+ * Load worker profile middleware
+ */
+const loadWorkerProfile = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return next();
+    }
+
+    if (req.user.role !== "worker") {
+      return next();
+    }
+
+    const worker = await Worker.findOne({ userId: req.user._id || req.user.id });
+    if (worker) {
+      req.worker = worker;
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Load worker profile optionally (doesn't require auth)
+ */
+loadWorkerProfile.optional = async (req, res, next) => {
+  try {
+    if (req.user && req.user.role === "worker") {
+      const worker = await Worker.findOne({ userId: req.user._id || req.user.id });
+      if (worker) {
+        req.worker = worker;
+      }
+    }
+    next();
+  } catch (error) {
+    // Don't fail on optional loading
+    next();
+  }
+};
+
+/**
+ * Load employer profile middleware
+ */
+const loadEmployerProfile = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return next();
+    }
+
+    if (req.user.role !== "employer") {
+      return next();
+    }
+
+    const employer = await Employer.findOne({ userId: req.user._id || req.user.id });
+    if (employer) {
+      req.employer = employer;
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Optional authentication - doesn't fail if no token (attached as property)
+ */
+authenticate.optional = optionalAuth;
+
+// Aliases for convenience
+const workerOnly = authorizeWorker;
+const employerOnly = authorizeEmployer;
+const adminOnly = authorizeAdmin;
+
 module.exports = {
   authenticate,
   optionalAuth,
@@ -269,4 +345,9 @@ module.exports = {
   authorizeAdmin,
   verifyRefreshToken,
   generateTokens,
+  loadWorkerProfile,
+  loadEmployerProfile,
+  workerOnly,
+  employerOnly,
+  adminOnly,
 };

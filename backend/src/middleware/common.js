@@ -214,4 +214,8 @@ module.exports = {
   corsPreflightHandler,
   apiVersion,
   maintenanceMode,
+  // Aliases for backward compatibility
+  requestIdMiddleware: requestId,
+  requestLoggingMiddleware: requestLogger,
+  languageDetector: detectLanguage,
 };

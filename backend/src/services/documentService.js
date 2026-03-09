@@ -266,7 +266,7 @@ class DocumentService {
    */
   async getPendingDocuments(pagination = {}) {
     const { page = 1, limit = 20 } = pagination;
-    const { Op } = require("sequelize");
+    const { Op } = require("../utils/mongoOp");
 
     const { count, rows: documents } = await Document.findAndCountAll({
       where: {

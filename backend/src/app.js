@@ -106,7 +106,16 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     description: "Backend API for informal workers platform",
     docs: "/api/docs",
-    health: "/api/health",
+    health: "/health",
+  });
+});
+
+// Root health check (Railway health checks)
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
   });
 });
 
@@ -120,10 +129,10 @@ app.use(errorHandler);
 const gracefulShutdown = async (signal) => {
   logger.info(`${signal} received. Starting graceful shutdown...`);
 
-  // Close database connections
+  // Close database connections (MongoDB/Mongoose)
   try {
-    const { sequelize } = require("./config/database");
-    await sequelize.close();
+    const mongoose = require("mongoose");
+    await mongoose.connection.close();
     logger.info("Database connections closed");
   } catch (error) {
     logger.error("Error closing database:", error);

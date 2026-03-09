@@ -31,6 +31,9 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 expressjs
 
+# Install wget for health check
+RUN apk add --no-cache wget
+
 # Copy built application
 COPY --from=deps --chown=expressjs:nodejs /app/node_modules ./node_modules
 COPY --chown=expressjs:nodejs . .
@@ -43,9 +46,9 @@ USER expressjs
 # Expose port
 EXPOSE 3000
 
-# Health check
+# Health check - uses PORT env variable (defaults to 3000)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:${PORT:-3000}/health || exit 1
 
 # Start the application
 CMD ["node", "src/server.js"]
