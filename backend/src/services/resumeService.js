@@ -22,7 +22,7 @@ class ResumeService {
     const generatedContent = await mlService.generateResume(
       worker,
       worker.user,
-      options,
+      options, // will pass linkedin_url, certificates array, template
     );
 
     // Create resume record
@@ -40,27 +40,31 @@ class ResumeService {
       summary: generatedContent.summary,
       work_experience: generatedContent.work_experience || [],
       education: generatedContent.education || [],
-      skills: worker.skills || [],
+      skills: generatedContent.skills || worker.skills || [],
       languages:
         worker.languages_known?.map((lang) => ({
           language: lang,
           proficiency: "conversational",
         })) || [],
       content: generatedContent.content || {},
+      // Store the generated PDF file if provided
+      file_url: generatedContent.pdf_base64 ? `data:application/pdf;base64,${generatedContent.pdf_base64}` : null,
       template: options.template || "basic",
       language: options.language || "en",
       is_ai_generated: true,
+      ats_score: generatedContent.ats_score,
+      ats_feedback: JSON.stringify(generatedContent.ats_feedback || [])
     });
 
-    // Analyze resume for ATS score
-    const analysis = await mlService.analyzeResume(resume.getFullContent());
-    await resume.updateATSScore(analysis.ats_score, analysis.feedback);
-
+    // We don't need a separate analysis call if the generation returns it
     logger.info(`Resume generated: ${resume.id}`);
 
     return {
       resume,
-      analysis,
+      analysis: {
+         ats_score: generatedContent.ats_score,
+         feedback: generatedContent.ats_feedback
+      }
     };
   }
 

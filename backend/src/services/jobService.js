@@ -325,81 +325,70 @@ class JobService {
     }
 
     const { page = 1, limit = 20 } = pagination;
-    const { offset } = paginate(page, limit);
 
-    // Build base query for active jobs
-    const where = {
-      status: "active",
-      [Op.or]: [{ expires_at: null }, { expires_at: { [Op.gt]: new Date() } }],
-    };
+    // Use ML service for recommendations
+    const recommendations = await mlService.recommendJobs(worker);
 
-    // Location filter if worker has location
-    if (worker.location_lat && worker.location_lng) {
-      const radius = worker.max_travel_distance || 10;
-      const bbox = mapService.getBoundingBox(
-        worker.location_lat,
-        worker.location_lng,
-        radius,
-      );
-      where.location_lat = { [Op.between]: [bbox.minLat, bbox.maxLat] };
-      where.location_lng = { [Op.between]: [bbox.minLng, bbox.maxLng] };
-    }
+    // Filter active jobs from recommendations and enrich with DB data
+    const activeJobs = [];
+    for (const rec of recommendations) {
+      const job = await Job.findOne({
+        where: { title: rec.job_title, status: "active" }, // simplified matching
+        include: [
+          {
+            model: Employer,
+            as: "employer",
+            attributes: [
+              "id",
+              "company_name",
+              "company_type",
+              "logo_url",
+              "is_verified",
+            ],
+          },
+        ],
+      });
 
-    // Skills overlap
-    if (worker.skills && worker.skills.length > 0) {
-      where.skills_required = { [Op.overlap]: worker.skills };
-    }
-
-    const { count, rows: jobs } = await Job.findAndCountAll({
-      where,
-      include: [
-        {
-          model: Employer,
-          as: "employer",
-          attributes: [
-            "id",
-            "company_name",
-            "company_type",
-            "logo_url",
-            "is_verified",
-          ],
-        },
-      ],
-      order: [["created_at", "DESC"]],
-      limit: Math.min(limit * 2, 50), // Fetch more for scoring
-      offset,
-    });
-
-    // Calculate match scores
-    const jobsWithScores = await Promise.all(
-      jobs.map(async (job) => {
-        const match = await mlService.calculateJobMatch(worker, job);
-        const distance =
-          worker.location_lat && worker.location_lng
-            ? mapService.getDistance(
-                worker.location_lat,
-                worker.location_lng,
-                job.location_lat,
-                job.location_lng,
-              )
-            : null;
-
-        return {
+      if (job) {
+        activeJobs.push({
           ...job.toJSON(),
-          matchScore: match.match_score,
-          skillsMatch: match.skills_match,
-          educationMatch: match.education_match,
-          distance,
-        };
-      }),
-    );
+          matchScore: rec.match_score,
+          skillsMatch: rec.match_score, // approximate mapping
+          educationMatch: true,
+          matchReason: rec.match_reason,
+          distance: worker.location_lat && worker.location_lng 
+            ? mapService.getDistance(
+                worker.location_lat, worker.location_lng,
+                job.location_lat, job.location_lng
+              )
+            : null
+        });
+      }
 
-    // Sort by match score and take top results
-    const sortedJobs = jobsWithScores
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, limit);
+      // Keep external scraped jobs directly
+      if (rec.source && rec.source !== "built-in") {
+        activeJobs.push({
+          id: `ext-${Math.random().toString(36).substring(7)}`,
+          title: rec.job_title,
+          employer: { company_name: rec.company },
+          location_address: rec.location,
+          matchScore: rec.match_score,
+          matchReason: rec.match_reason,
+          applicationUrl: rec.application_url,
+          isExternal: true
+        });
+      }
+    }
 
-    return formatPaginationResponse(sortedJobs, count, page, limit);
+    // Sort by match score
+    const sortedJobs = activeJobs.sort((a, b) => b.matchScore - a.matchScore);
+    
+    // Manual pagination
+    const totalCount = sortedJobs.length;
+    const startIndex = (page - 1) * limit;
+    const paginatedJobs = sortedJobs.slice(startIndex, startIndex + limit);
+
+    return formatPaginationResponse(paginatedJobs, totalCount, page, limit);
   }
 
   /**

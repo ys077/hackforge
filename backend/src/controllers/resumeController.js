@@ -13,9 +13,33 @@ exports.generateResume = asyncHandler(async (req, res) => {
     language: req.body.language,
     include_photo: req.body.include_photo,
     title: req.body.title,
+    linkedin_url: req.body.linkedin_url,
+    certificates: req.body.certificates, // array of base64 images
   };
   const result = await resumeService.generateResume(workerId, options);
   created(res, result, "Resume generated");
+});
+
+/**
+ * @route POST /api/resumes/parse-linkedin
+ * @desc Parse LinkedIn profile URL
+ */
+exports.parseLinkedIn = asyncHandler(async (req, res) => {
+  const { url } = req.body;
+  const mlService = require("../services/mlService");
+  const result = await mlService.parseLinkedIn(url);
+  success(res, result, "LinkedIn profile parsed");
+});
+
+/**
+ * @route POST /api/resumes/parse-certificate
+ * @desc Parse certificate image
+ */
+exports.parseCertificate = asyncHandler(async (req, res) => {
+  const { image } = req.body; // base64
+  const mlService = require("../services/mlService");
+  const result = await mlService.parseCertificate(image);
+  success(res, result, "Certificate parsed");
 });
 
 /**

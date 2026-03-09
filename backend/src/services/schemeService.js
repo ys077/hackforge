@@ -105,48 +105,65 @@ class SchemeService {
       .map((d) => d.document_type);
 
     const { page = 1, limit = 20 } = pagination;
-    const { offset } = paginate(page, limit);
+    
+    // Attach verified docs to worker for Recommendation
+    const workerWithDocs = {
+      ...worker.toJSON(),
+      documents: verifiedDocTypes
+    };
 
-    // Get all active schemes
-    const allSchemes = await GovernmentScheme.findEligibleSchemes(worker, {
-      limit: 100, // Get more for filtering
-    });
+    // Use ML service for recommendations
+    const recommendations = await mlService.recommendSchemes(workerWithDocs);
 
-    // Calculate eligibility for each scheme
-    const eligibleSchemes = await Promise.all(
-      allSchemes.map(async (scheme) => {
-        const eligibility = await mlService.checkSchemeEligibility(
-          {
-            ...worker.toJSON(),
-            documents: verifiedDocTypes,
-          },
-          scheme,
-        );
+    // Map recommendations to DB records or keep as parsed scraped schemes
+    const activeSchemes = [];
+    for (const rec of recommendations) {
+      const scheme = await GovernmentScheme.findOne({
+        where: { name: rec.scheme_name, is_active: true }
+      });
 
-        return {
+      if (scheme) {
+        activeSchemes.push({
           ...scheme.toJSON(),
-          eligibilityScore: eligibility.eligibility_score,
-          eligible: eligibility.eligible,
-          matchedCriteria: eligibility.matched_criteria,
-          missingCriteria: eligibility.missing_criteria,
-          missingDocuments: scheme.required_documents.filter(
+          eligibilityScore: rec.eligibility_score,
+          eligible: rec.eligibility_score >= 50,
+          matchedCriteria: rec.matched_criteria || [],
+          matchReason: rec.reason,
+          missingDocuments: scheme.required_documents?.filter(
             (d) => !verifiedDocTypes.includes(d),
-          ),
-        };
-      }),
-    );
+          ) || [],
+        });
+      } else {
+        // Handle scraped schemes not in DB
+        activeSchemes.push({
+          id: `ext-${Math.random().toString(36).substring(7)}`,
+          name: rec.scheme_name,
+          description: rec.benefits?.join(", ") || "",
+          benefit_type: "external",
+          eligibilityScore: rec.eligibility_score,
+          eligible: rec.eligibility_score >= 50,
+          matchedCriteria: rec.matched_criteria || [],
+          matchReason: rec.reason,
+          applicationUrl: rec.application_url,
+          missingDocuments: rec.required_documents?.filter(
+             (d) => !verifiedDocTypes.includes(d)
+          ) || [],
+          isExternal: true
+        });
+      }
+    }
 
     // Sort by eligibility score
-    const sortedSchemes = eligibleSchemes
-      .filter((s) => s.eligible || s.eligibilityScore >= 50)
-      .sort((a, b) => b.eligibilityScore - a.eligibilityScore);
-
-    // Paginate
-    const paginatedSchemes = sortedSchemes.slice(offset, offset + limit);
+    const sortedSchemes = activeSchemes.sort((a, b) => b.eligibilityScore - a.eligibilityScore);
+    
+    // Manual pagination
+    const totalCount = sortedSchemes.length;
+    const startIndex = (page - 1) * limit;
+    const paginatedSchemes = sortedSchemes.slice(startIndex, startIndex + limit);
 
     return formatPaginationResponse(
       paginatedSchemes,
-      sortedSchemes.length,
+      totalCount,
       page,
       limit,
     );

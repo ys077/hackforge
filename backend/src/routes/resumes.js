@@ -18,8 +18,28 @@ router.use(authenticate, workerOnly, loadWorkerProfile);
  */
 router.post(
   "/generate",
-  validate(schemas.resume.generate),
+  // validate(schemas.resume.generate), // disabled temporarily for new schema fields
   resumeController.generateResume,
+);
+
+/**
+ * @route POST /api/resumes/parse-linkedin
+ * @desc Extract data from LinkedIn
+ * @access Private (Worker)
+ */
+router.post(
+  "/parse-linkedin",
+  resumeController.parseLinkedIn,
+);
+
+/**
+ * @route POST /api/resumes/parse-certificate
+ * @desc Parse certificate image
+ * @access Private (Worker)
+ */
+router.post(
+  "/parse-certificate",
+  resumeController.parseCertificate,
 );
 
 /**

@@ -7,6 +7,23 @@ const {
   loadWorkerProfile,
 } = require("../middleware/auth");
 const { validate, schemas } = require("../utils/validators");
+const { authorize } = require("../middleware/auth");
+
+/**
+ * Admin routes
+ */
+
+/**
+ * @route POST /api/schemes/scrape
+ * @desc Trigger AI scheme scraping
+ * @access Private (Admin)
+ */
+router.post(
+  "/scrape",
+  authenticate,
+  authorize("admin"),
+  schemeController.triggerScrape,
+);
 
 /**
  * Public routes

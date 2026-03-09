@@ -1,15 +1,39 @@
+# Core
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
 python-multipart>=0.0.6
-numpy>=1.26.0
-scikit-learn>=1.4.0
-sentence-transformers>=2.2.2
-Pillow>=10.2.0
-pytesseract>=0.3.10
-redis>=5.0.0
-httpx>=0.26.0
 python-dotenv>=1.0.0
 loguru>=0.7.2
 prometheus-fastapi-instrumentator>=6.1.0
+
+# Data & ML
+numpy>=1.26.0
+scikit-learn>=1.4.0
+sentence-transformers>=2.2.2
+torch>=2.1.0
+torchvision>=0.16.0
+PyMuPDF>=1.23.0
+
+# NLP
+spacy>=3.7.0
+
+# Web Scraping
+beautifulsoup4>=4.12.0
+lxml>=5.1.0
+httpx>=0.26.0
+aiohttp>=3.9.0
+fake-useragent>=1.4.0
+
+# OCR & Image Processing
+Pillow>=10.2.0
+pytesseract>=0.3.10
+opencv-python-headless>=4.9.0
+
+# PDF Generation
+fpdf2>=2.7.0
+reportlab>=4.1.0
+
+# Cache
+redis>=5.0.0

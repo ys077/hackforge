@@ -1,7 +1,3 @@
-const jobService = require("../services/jobService");
-const { success, created } = require("../utils/responses");
-const { asyncHandler } = require("../middleware/errorHandler");
-
 /**
  * @route POST /api/jobs
  * @desc Create a new job posting
@@ -10,6 +6,17 @@ exports.createJob = asyncHandler(async (req, res) => {
   const employerId = req.employer.id;
   const result = await jobService.createJob(employerId, req.body);
   created(res, result, "Job created successfully");
+});
+
+/**
+ * @route POST /api/jobs/scrape
+ * @desc Trigger AI job scraping
+ */
+exports.triggerScrape = asyncHandler(async (req, res) => {
+  const { keywords, location } = req.body;
+  const mlService = require("../services/mlService");
+  const result = await mlService.triggerJobScrape(keywords, location);
+  success(res, result, "Job scraping triggered");
 });
 
 /**

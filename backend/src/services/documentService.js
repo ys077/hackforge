@@ -87,20 +87,24 @@ class DocumentService {
     }
 
     try {
-      // Call ML service for verification
+      // 1. Read document file as base64 to pass to mlService
+      const fs = require('fs');
+      const documentImageBase64 = fs.readFileSync(document.file_path, {encoding: 'base64'});
+
+      // 2. Call ML service for verification
       const verification = await mlService.verifyDocument(
         document.document_type,
-        document.file_path, // ML service will read the file
+        documentImageBase64
       );
 
-      // Update document with verification results
+      // 3. Update document with verification results
       document.ai_verified = verification.verified;
-      document.ai_verification_score = verification.confidence;
+      document.ai_verification_score = verification.confidence; // Map trust_score to confidence
       document.ai_verification_notes = JSON.stringify(
         verification.issues || [],
       );
 
-      // Set OCR data if available
+      // 4. Set OCR data if available
       if (verification.extracted_data) {
         await document.setOCRData(
           verification.extracted_data,
@@ -108,24 +112,25 @@ class DocumentService {
         );
       }
 
-      // Auto-approve if confidence is high enough
-      if (verification.verified && verification.confidence >= 85) {
+      // 5. Auto-approve if confidence is high enough
+      if (verification.verified && verification.confidence >= 80) {
         document.verification_status = "verified";
         document.verified_at = new Date();
-      } else if (verification.confidence < 50) {
+      } else if (verification.confidence < 50 || (verification.issues && verification.issues.length > 0)) {
+        // Reject if confidence is low OR if ML returned significant issues (e.g. Tampering detected)
         document.verification_status = "rejected";
         document.rejected_at = new Date();
         document.rejection_reason =
-          verification.issues?.join(", ") || "Low confidence score";
+          verification.issues?.join(", ") || "Low AI confidence score";
       }
-      // Otherwise keep as pending for manual review
+      // Otherwise keep as pending for manual review (between 50 and 80)
 
       await document.save();
 
-      // Update trust score
+      // 6. Update trust score
       await this.updateWorkerTrustScore(document.worker_id);
 
-      // Queue notification
+      // 7. Queue notification
       if (document.verification_status === "verified") {
         await addJob(QUEUE_NAMES.NOTIFICATION, "document-verified", {
           documentId: document.id,
@@ -139,7 +144,7 @@ class DocumentService {
       };
     } catch (error) {
       logger.error("Document verification error:", error);
-      throw new DocumentVerificationError("Failed to verify document");
+      throw new DocumentVerificationError("Failed to verify document via AI model");
     }
   }
 

@@ -150,6 +150,16 @@ exports.createScheme = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @route POST /api/admin/schemes/scrape
+ * @desc Trigger AI scheme scraping
+ */
+exports.triggerScrape = asyncHandler(async (req, res) => {
+  const mlService = require("../services/mlService");
+  const result = await mlService.triggerSchemeScrape();
+  success(res, result, "Scheme scraping triggered");
+});
+
+/**
  * @route PUT /api/admin/schemes/:id
  * @desc Update a scheme
  */

@@ -1,0 +1,5 @@
+torch
+torchvision
+pillow
+pdf2image
+pymupdf

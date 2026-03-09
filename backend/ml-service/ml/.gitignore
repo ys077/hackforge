@@ -1,0 +1,6 @@
+# Exclude the training dataset (6000+ synthetic images)  
+dataset/
+__pycache__/
+
+# Keep trained model (model.pth) — tracked via Git LFS or committed directly
+# !model.pth

@@ -13,6 +13,18 @@ const { searchLimiter } = require("../middleware/rateLimiter");
 const { validate, schemas } = require("../utils/validators");
 
 /**
+ * @route POST /api/jobs/scrape
+ * @desc Trigger AI job scraping
+ * @access Private (Admin)
+ */
+router.post(
+  "/scrape",
+  authenticate,
+  authorize("admin"),
+  jobController.triggerScrape
+);
+
+/**
  * Public routes
  */
 
