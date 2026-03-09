@@ -83,9 +83,17 @@ const startServer = async () => {
     });
 
     // Connect to database (after server is already listening)
-    logger.info("Connecting to database...");
-    await connectDatabase();
-    logger.info("Database connected successfully");
+    // Wrapped in its own try/catch so DB failure doesn't kill the server
+    try {
+      logger.info("Connecting to database...");
+      await connectDatabase();
+      logger.info("Database connected successfully");
+    } catch (dbError) {
+      logger.error(
+        "Database connection failed - server running but DB unavailable:",
+        dbError.message,
+      );
+    }
 
     // Connect to Redis (optional - server continues if Redis unavailable)
     if (getRedisClient && process.env.REDIS_HOST) {
