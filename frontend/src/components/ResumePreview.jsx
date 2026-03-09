@@ -6,7 +6,7 @@ const ResumePreview = ({ resumeData }) => {
   if (!resumeData) return null;
 
   return (
-    <div className="glass-panel overflow-hidden border border-white/10 shadow-2xl flex flex-col md:flex-row gap-6">
+    <div className="bg-slate-50 overflow-hidden border border-slate-200 rounded-2xl shadow-md p-6 flex flex-col md:flex-row gap-6">
       
       {/* Visual Resume Sheet Layout */}
       <div className="flex-1 bg-white text-slate-900 p-8 rounded-xl shadow-inner min-h-[600px] border border-slate-200 printable-resume">
@@ -62,22 +62,22 @@ const ResumePreview = ({ resumeData }) => {
 
       {/* Editor & Actions Pane */}
       <div className="w-full md:w-72 flex flex-col gap-4">
-        <div className="bg-slate-800/50 border border-white/5 rounded-xl p-5 mb-2">
-          <h3 className="text-white font-bold mb-1 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400"></div> AI ATS Score
+        <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5 mb-2">
+          <h3 className="text-slate-800 font-bold mb-1 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-brand-primary"></div> AI ATS Score
           </h3>
           <div className="flex items-end gap-2 mb-2">
-            <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+            <span className="text-3xl font-black text-brand-primary">
               {resumeData.ats_score || 85}
             </span>
-            <span className="text-slate-400 mb-1 font-medium">/ 100</span>
+            <span className="text-slate-500 mb-1 font-medium">/ 100</span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             Formatted for Applicant Tracking Systems and readability.
           </p>
         </div>
 
-        <Button variant="primary" className="w-full justify-start gap-3">
+        <Button variant="primary" className="w-full justify-start gap-3 bg-brand-primary hover:bg-brand-primary-hover border-none">
           <Download size={18} /> Download PDF
         </Button>
         <Button variant="secondary" className="w-full justify-start gap-3">

@@ -13,7 +13,7 @@ import UploadDocuments from './pages/UploadDocuments';
 import ResumeBuilder from './pages/ResumeBuilder';
 import Schemes from './pages/Schemes';
 import Jobs from './pages/Jobs';
-import Applications from './pages/Applications';
+import InterviewVault from './pages/InterviewVault';
 import Settings from './pages/Settings';
 
 // Public Route Guard (redirects to dashboard if already logged in)
@@ -38,7 +38,7 @@ function AppRoutes() {
         <Route path="/resume" element={<ResumeBuilder />} />
         <Route path="/schemes" element={<Schemes />} />
         <Route path="/jobs" element={<Jobs />} />
-        <Route path="/applications" element={<Applications />} />
+        <Route path="/interviews" element={<InterviewVault />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
 

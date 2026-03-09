@@ -52,26 +52,26 @@ const UploadDocuments = () => {
     <div className="py-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Secure Document Locker</h1>
-          <p className="text-slate-400">Upload documents to verify your identity and skills. A higher trust score unlocks better jobs.</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Secure Document Locker</h1>
+          <p className="text-slate-600">Upload documents to verify your identity and skills. A higher trust score unlocks better jobs.</p>
         </div>
 
         {/* Global Trust Score Indicator */}
-        <div className="bg-slate-800/80 border border-white/10 rounded-2xl p-4 flex items-center gap-5 min-w-[250px] shadow-lg">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-5 min-w-[250px] shadow-sm">
           <div className="relative w-16 h-16 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-700" />
+              <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
               <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" 
                 strokeDasharray={175} strokeDashoffset={175 - (175 * trustScore) / 100}
-                className={`transition-all duration-1000 ${trustScore > 75 ? 'text-emerald-400' : trustScore > 40 ? 'text-amber-400' : 'text-red-400'}`} />
+                className={`transition-all duration-1000 ${trustScore > 70 ? 'text-brand-primary' : trustScore > 40 ? 'text-brand-accent' : 'text-red-500'}`} />
             </svg>
-            <span className="absolute text-lg font-bold text-white">{trustScore}%</span>
+            <span className="absolute text-lg font-bold text-slate-800">{trustScore}%</span>
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-1">AI Trust Score</h4>
-            <p className="text-xs text-slate-400 flex items-center gap-1">
-              <ShieldCheck size={14} className={trustScore > 75 ? 'text-emerald-400' : 'text-slate-400'} />
-              {trustScore > 75 ? 'Highly Trusted' : 'Needs Verification'}
+            <h4 className="text-sm font-bold text-brand-secondary uppercase tracking-wider mb-1">AI Trust Score</h4>
+            <p className="text-xs text-slate-500 flex items-center gap-1">
+              <ShieldCheck size={14} className={trustScore > 70 ? 'text-brand-primary' : 'text-slate-400'} />
+              {trustScore > 70 ? 'Highly Trusted' : 'Needs Verification'}
             </p>
           </div>
         </div>
@@ -80,10 +80,13 @@ const UploadDocuments = () => {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Document Cards */}
         {[
-          { id: 'aadhaar', label: 'Aadhaar Card' },
-          { id: 'pan', label: 'PAN Card' },
-          { id: 'passbook', label: 'Bank Passbook' },
-          { id: 'certificate', label: 'Skill Certificate' }
+          { id: 'aadhaar', label: 'Aadhaar Card (+20 pts)' },
+          { id: 'passbook', label: 'Bank Passbook (+20 pts)' },
+          { id: 'pan', label: 'PAN Card (+15 pts)' },
+          { id: 'certificate', label: 'Skill Certificates (+15 pts)' },
+          { id: 'employment_letter', label: 'Employment Letters (+15 pts)' },
+          { id: 'trade_licence', label: 'Trade Licence (+15 pts)' },
+          { id: 'voter_id', label: 'Voter ID (+10 pts)' }
         ].map(doc => (
           <div key={doc.id} className="flex flex-col gap-2">
             <UploadCard 
@@ -95,8 +98,8 @@ const UploadDocuments = () => {
             {results[doc.id] && (
               <div className={`text-sm p-3 rounded-xl border flex items-start gap-2 ${
                 results[doc.id].success 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                  : 'bg-red-500/10 border-red-500/20 text-red-400'
+                  ? 'bg-brand-primary/10 border-brand-primary/20 text-brand-primary'
+                  : 'bg-red-50 border-red-200 text-red-600'
               }`}>
                 {results[doc.id].success ? <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" /> : <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />}
                 <div>

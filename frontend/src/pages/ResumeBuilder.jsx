@@ -3,7 +3,7 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import ResumePreview from '../components/ResumePreview';
 import { resumeService } from '../services/resumeService';
-import { Sparkles, Linkedin, Award, Briefcase } from 'lucide-react';
+import { Sparkles, Linkedin, Award, Briefcase, FileText, FileEdit, FileSearch } from 'lucide-react';
 
 const ResumeBuilder = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +21,7 @@ const ResumeBuilder = () => {
   const [generatedResume, setGeneratedResume] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [actionType, setActionType] = useState('build'); // 'build', 'enhance', 'match'
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -29,6 +30,7 @@ const ResumeBuilder = () => {
 
     const payload = {
       user_id: "u_123", // Dummy for now
+      action: actionType,
       profile_data: {
         ...formData,
         skills: formData.skills.split(',').map(s => s.trim())
@@ -64,35 +66,63 @@ const ResumeBuilder = () => {
   };
 
   return (
-    <div className="py-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="py-6 animate-in fade-in slide-in-from-bottom-4 duration-500 h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar pr-2">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">AI Resume Builder</h1>
-        <p className="text-slate-400">Generate an ATS-optimized professional resume instantly from your details or LinkedIn.</p>
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">AI Resume Builder</h1>
+        <p className="text-slate-600">Generate an ATS-optimized professional resume instantly from your details or LinkedIn.</p>
+      </div>
+
+      {/* 3-Path Selection */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <button 
+          onClick={() => setActionType('build')}
+          className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${actionType === 'build' ? 'bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-brand-primary/50'}`}
+        >
+          <FileText size={24} />
+          <span className="font-semibold">Build New Resume</span>
+          <span className="text-xs text-center opacity-80">Start from scratch using your profile data</span>
+        </button>
+        <button 
+          onClick={() => setActionType('enhance')}
+          className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${actionType === 'enhance' ? 'bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-brand-primary/50'}`}
+        >
+          <FileEdit size={24} />
+          <span className="font-semibold">Enhance Existing</span>
+          <span className="text-xs text-center opacity-80">Make your current resume sound more professional</span>
+        </button>
+        <button 
+          onClick={() => setActionType('match')}
+          className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${actionType === 'match' ? 'bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-brand-primary/50'}`}
+        >
+          <FileSearch size={24} />
+          <span className="font-semibold">Target Specific Job</span>
+          <span className="text-xs text-center opacity-80">Tailor your resume for a specific job description</span>
+        </button>
       </div>
 
       <div className="grid xl:grid-cols-12 gap-8">
         
         {/* Inputs Column */}
         <div className="xl:col-span-4 flex flex-col gap-6">
-          <div className="glass-panel p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Linkedin size={20} className="text-blue-400" /> Auto-Fill (Optional)
+          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <Linkedin size={20} className="text-brand-secondary" /> Auto-Fill (Optional)
             </h3>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               <Input 
                 placeholder="Paste LinkedIn Profile URL" 
                 value={formData.linkedin_url}
                 onChange={e => setFormData({...formData, linkedin_url: e.target.value})}
               />
-              <Button variant="outline" className="shrink-0" title="Extract Data">
-                <Sparkles size={18} />
+              <Button variant="outline" className="w-full justify-center" title="Extract Data">
+                <Sparkles size={18} className="mr-2"/> Extract Data
               </Button>
             </div>
           </div>
 
-          <div className="glass-panel p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Briefcase size={20} className="text-purple-400" /> Manual Details
+          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <Briefcase size={20} className="text-brand-primary" /> Manual Details
             </h3>
             
             <form onSubmit={handleGenerate} className="space-y-4">
@@ -110,9 +140,9 @@ const ResumeBuilder = () => {
                 required
               />
               <div className="flex flex-col gap-1.5 w-full">
-                <label className="text-sm font-medium text-slate-400">Key Skills (Comma separated)</label>
+                <label className="text-sm font-medium text-slate-600">Key Skills (Comma separated)</label>
                 <textarea 
-                  className="glass-input rounded-xl px-4 py-2.5 w-full min-h-[100px]"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 min-h-[100px]"
                   value={formData.skills}
                   onChange={e => setFormData({...formData, skills: e.target.value})}
                   required
@@ -125,10 +155,11 @@ const ResumeBuilder = () => {
                 required
               />
 
-              {error && <p className="text-sm text-red-400">{error}</p>}
+              {error && <p className="text-sm text-red-500">{error}</p>}
 
-              <Button type="submit" variant="primary" className="w-full mt-4" isLoading={loading}>
-                <Sparkles size={18} className="mr-2" /> Generate ATS Resume
+              <Button type="submit" variant="primary" className="w-full mt-4 bg-brand-primary hover:bg-brand-primary-hover border-none" isLoading={loading}>
+                <Sparkles size={18} className="mr-2" />
+                {actionType === 'build' ? 'Generate New Resume' : actionType === 'enhance' ? 'Enhance Existing Resume' : 'Match to Job Description'}
               </Button>
             </form>
           </div>
@@ -141,13 +172,13 @@ const ResumeBuilder = () => {
               <ResumePreview resumeData={generatedResume} />
             </div>
           ) : (
-            <div className="glass-panel h-full min-h-[600px] flex flex-col items-center justify-center text-center p-8 border-dashed border-2 border-white/5">
-              <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 mb-6">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl h-full min-h-[600px] flex flex-col items-center justify-center text-center p-8 border-dashed border-2">
+              <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-6">
                 <FileText size={40} />
               </div>
-              <h3 className="text-xl font-bold text-slate-300 mb-2">No Resume Generated Yet</h3>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">No Resume Generated Yet</h3>
               <p className="text-slate-500 max-w-sm">
-                Fill out your details on the left and hit generate to create a perfectly formatted, ATS-compliant resume.
+                Select your desired action, fill out your details on the left, and hit generate to create a perfectly formatted, English-fluent resume.
               </p>
             </div>
           )}

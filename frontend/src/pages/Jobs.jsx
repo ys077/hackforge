@@ -8,13 +8,14 @@ import * as maptilersdk from '@maptiler/sdk';
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 
 // Using a placeholder or from environment
-maptilersdk.config.apiKey = 'YOUR_MAPTILER_API_KEY_HERE';
+maptilersdk.config.apiKey = '1ePgGuUyZhKj3gBeAZ6O';
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [searchTerm, setSearchTerm] = useState('');
+  const [distanceRadius, setDistanceRadius] = useState('15');
   const mapContainer = useRef(null);
   const map = useRef(null);
 
@@ -96,13 +97,14 @@ const Jobs = () => {
       const { job, match_score } = item;
       if (job.lng && job.lat) {
         // Color based on match score
-        const color = match_score > 0.8 ? '#10b981' : '#f59e0b'; // Green vs Amber
+        const isHigh = match_score >= 0.70;
+        const color = isHigh ? '#2E7D32' : '#F9A825'; // Green vs Amber
         
         const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
           `<div style="color: black; padding: 5px;">
             <h3 style="font-weight: bold; margin-bottom: 2px;">${job.title}</h3>
             <p style="font-size: 12px; color: #555;">${job.company}</p>
-            <p style="font-size: 12px; color: #10b981; font-weight: bold; margin-top: 4px;">${job.salary_range}</p>
+            <p style="font-size: 12px; color: ${color}; font-weight: bold; margin-top: 4px;">${job.salary_range}</p>
           </div>`
         );
 
@@ -114,40 +116,57 @@ const Jobs = () => {
     });
   };
 
-  const filteredJobs = jobs.filter(j => 
-    j.job.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    j.job.location?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredJobs = jobs.filter(j => {
+    // 🔴 LOW MATCHES Are Hidden Completely (< 0.40)
+    if (j.match_score < 0.40) return false;
+    
+    return j.job.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           j.job.location?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div className="py-6 animate-in fade-in slide-in-from-bottom-4 duration-500 h-[calc(100vh-80px)] flex flex-col">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4 shrink-0">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Job Opportunities</h1>
-          <p className="text-slate-400">Discover and apply to roles perfectly matched to your skills.</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Job Opportunities</h1>
+          <p className="text-slate-600">Discover and apply to roles perfectly matched to your skills.</p>
         </div>
         
-        <div className="flex w-full md:w-auto gap-2">
-          <div className="relative w-full md:w-64">
+        <div className="flex flex-col md:flex-row w-full md:w-auto gap-3">
+          <div className="relative w-full md:w-56">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input 
-              placeholder="Search by title or location..." 
-              className="pl-10" 
+              placeholder="Search title..." 
+              className="pl-10 h-10 border-slate-200 bg-white" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          <div className="w-full md:w-40 relative">
+            <select 
+              className="w-full h-10 pl-3 pr-8 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
+              value={distanceRadius}
+              onChange={(e) => setDistanceRadius(e.target.value)}
+            >
+              <option value="5">Within 5 km</option>
+              <option value="10">Within 10 km</option>
+              <option value="15">Within 15 km</option>
+              <option value="25">Within 25 km</option>
+              <option value="district">District-wide</option>
+            </select>
+          </div>
           
-          <div className="flex bg-slate-800 p-1 rounded-xl border border-white/10 shrink-0">
+          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0 self-start md:self-auto h-10 items-center">
             <button 
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`p-1.5 rounded-lg transition-colors text-sm ${viewMode === 'list' ? 'bg-white shadow-sm font-semibold text-brand-primary' : 'text-slate-500 hover:text-slate-800'}`}
               onClick={() => setViewMode('list')}
               title="List View"
             >
               <List size={18} />
             </button>
             <button 
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'map' ? 'bg-blue-500 text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`p-1.5 rounded-lg transition-colors text-sm ${viewMode === 'map' ? 'bg-white shadow-sm font-semibold text-brand-primary' : 'text-slate-500 hover:text-slate-800'}`}
               onClick={() => setViewMode('map')}
               title="Map View"
             >
@@ -159,8 +178,8 @@ const Jobs = () => {
 
       {loading ? (
         <div className="flex-1 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-slate-400">Finding the best local jobs for you...</p>
+          <div className="w-10 h-10 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-500">Finding the best local jobs for you...</p>
         </div>
       ) : (
         <div className="flex-1 relative min-h-0">
@@ -176,27 +195,27 @@ const Jobs = () => {
               ))}
               
               {filteredJobs.length === 0 && (
-                <div className="col-span-full text-center py-20 glass-panel">
-                  <MapPin size={48} className="mx-auto text-slate-600 mb-4" />
-                  <h3 className="text-xl font-bold text-white mb-2">No jobs found nearby</h3>
-                  <p className="text-slate-400">Try zooming out or adjusting your search.</p>
+                <div className="col-span-full text-center py-20 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <MapPin size={48} className="mx-auto text-slate-400 mb-4" />
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">No jobs found nearby</h3>
+                  <p className="text-slate-500">Try zooming out the radius or expanding your search.</p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="w-full h-full rounded-2xl overflow-hidden border border-white/10 relative">
+            <div className="w-full h-full rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner">
               <div 
                 ref={mapContainer} 
                 className="absolute inset-0" 
-                style={{ backgroundColor: '#1e293b' }}
+                style={{ backgroundColor: '#e2e8f0' }}
               />
               {/* Map Legend */}
-              <div className="absolute top-4 left-4 glass-panel p-3 text-sm z-10 flex flex-col gap-2 shadow-lg">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500"></span> High Match (&gt;80%)
+              <div className="absolute top-4 left-4 bg-white/95 rounded-xl border border-slate-200 p-3 text-sm z-10 flex flex-col gap-2 shadow-sm backdrop-blur-sm pointer-events-none">
+                <div className="flex items-center gap-2 font-medium text-slate-700">
+                  <span className="w-3 h-3 rounded-full bg-brand-primary"></span> 🟢 High Match (&ge;70%)
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-amber-500"></span> Good Match
+                <div className="flex items-center gap-2 font-medium text-slate-700">
+                  <span className="w-3 h-3 rounded-full bg-brand-accent"></span> 🟡 Medium Match (40-69%)
                 </div>
               </div>
             </div>
