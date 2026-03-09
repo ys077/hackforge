@@ -57,29 +57,8 @@ app.set("io", io);
 // Start server
 const startServer = async () => {
   try {
-    // Connect to database
-    logger.info("Connecting to database...");
-    await connectDatabase();
-    logger.info("Database connected successfully");
-
-    // Connect to Redis (optional - server continues if Redis unavailable)
-    if (getRedisClient && process.env.REDIS_HOST) {
-      try {
-        logger.info("Connecting to Redis...");
-        const redis = getRedisClient();
-        await redis.ping();
-        logger.info("Redis connected successfully");
-      } catch (redisError) {
-        logger.warn(
-          "Redis connection failed - continuing without Redis:",
-          redisError.message,
-        );
-      }
-    } else {
-      logger.info("Redis not configured - skipping Redis connection");
-    }
-
-    // Start HTTP server - use PORT from environment (Railway assigns this)
+    // Start HTTP server FIRST so healthcheck endpoint is available immediately
+    // This prevents Railway healthcheck failures while DB/Redis are connecting
     const port = process.env.PORT || config.port;
     server.listen(port, "0.0.0.0", () => {
       logger.info(`🚀 Server running on port ${port}`);
@@ -102,6 +81,28 @@ const startServer = async () => {
         logger.debug(`Socket disconnected: ${socket.id}`, { reason });
       });
     });
+
+    // Connect to database (after server is already listening)
+    logger.info("Connecting to database...");
+    await connectDatabase();
+    logger.info("Database connected successfully");
+
+    // Connect to Redis (optional - server continues if Redis unavailable)
+    if (getRedisClient && process.env.REDIS_HOST) {
+      try {
+        logger.info("Connecting to Redis...");
+        const redis = getRedisClient();
+        await redis.ping();
+        logger.info("Redis connected successfully");
+      } catch (redisError) {
+        logger.warn(
+          "Redis connection failed - continuing without Redis:",
+          redisError.message,
+        );
+      }
+    } else {
+      logger.info("Redis not configured - skipping Redis connection");
+    }
   } catch (error) {
     logger.error("Failed to start server:", error);
     process.exit(1);
