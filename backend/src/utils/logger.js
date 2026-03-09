@@ -2,10 +2,22 @@ const winston = require("winston");
 const path = require("path");
 const fs = require("fs");
 
-// Create logs directory if it doesn't exist
+// Try to create logs directory - gracefully handle permission errors
 const logsDir = path.join(process.cwd(), "logs");
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+let canWriteLogs = false;
+
+try {
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+  // Test if we can write to the directory
+  const testFile = path.join(logsDir, ".test");
+  fs.writeFileSync(testFile, "test");
+  fs.unlinkSync(testFile);
+  canWriteLogs = true;
+} catch (err) {
+  console.warn(`Warning: Cannot write to logs directory (${err.code}). Using console-only logging.`);
+  canWriteLogs = false;
 }
 
 // Custom log format
@@ -53,8 +65,8 @@ const transports = [
   }),
 ];
 
-// Add file transports in production
-if (process.env.NODE_ENV === "production") {
+// Add file transports in production (only if we can write to logs directory)
+if (process.env.NODE_ENV === "production" && canWriteLogs) {
   transports.push(
     // Combined log file
     new winston.transports.File({

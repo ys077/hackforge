@@ -38,8 +38,8 @@ RUN apk add --no-cache wget
 COPY --from=deps --chown=expressjs:nodejs /app/node_modules ./node_modules
 COPY --chown=expressjs:nodejs . .
 
-# Create uploads directory
-RUN mkdir -p uploads && chown expressjs:nodejs uploads
+# Create uploads and logs directories
+RUN mkdir -p uploads logs && chown -R expressjs:nodejs uploads logs
 
 USER expressjs
 
